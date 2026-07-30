@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="48" height="48" shape-rendering="crispEdges">
+  <path fill="#39FF14" d="
+    M 4,4 h 8 v 1 h 2 v 6 h -2 v 1 h -8 v -1 h -2 v -6 h 2 z
+    M 4,12 h 2 v 2 h -2 z
+    M 12,12 h 2 v 2 h -2 z
+    M 5,1 h 2 v 3 h -2 z
+  " />
+  <path fill="#050505" d="
+    M 9,6 h 2 v 2 h -2 z
+    M 12,6 h 2 v 2 h -2 z
+  " />
+</svg>
