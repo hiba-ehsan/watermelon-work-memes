@@ -1,15 +1,16 @@
 {
   "version": 2,
+  "buildCommand": "nest build",
   "builds": [
     {
-      "src": "src/main.ts",
+      "src": "dist/lambda.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "src/main.ts"
+      "dest": "dist/lambda.js"
     }
   ]
 }

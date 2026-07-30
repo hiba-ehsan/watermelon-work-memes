@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { fromServer } from '@/lib/supabase/server';
+import { apiClient } from '@/lib/api-client';
 
 export async function POST(request: Request) {
   const supabase = await fromServer();
@@ -15,48 +16,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'vibeId is required' }, { status: 400 });
   }
 
-  const today = new Date().toISOString().split('T')[0];
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData.session?.access_token;
 
-  const { error: insertError } = await supabase
-    .from('vibe_selections')
-    .insert({ user_id: user.id, vibe_id: vibeId, selected_date: today });
-
-  if (insertError) {
-    if (insertError.code === '23505') {
+  try {
+    const result = await apiClient<{
+      matchCount: number;
+      newStreak: number;
+      isTwinMatch: boolean;
+    }>({
+      path: '/vibe/select',
+      method: 'POST',
+      body: { vibe_id: vibeId },
+      accessToken,
+    });
+    return NextResponse.json(result);
+  } catch (err: any) {
+    if (err.message === 'Already picked today') {
       return NextResponse.json({ error: 'Already picked today' }, { status: 409 });
     }
-    return NextResponse.json({ error: insertError.message }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || 'Failed to select vibe' },
+      { status: 500 },
+    );
   }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('current_streak, last_vibe_date')
-    .eq('id', user.id)
-    .single();
-
-  let newStreak = 1;
-  if (profile?.last_vibe_date) {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-    newStreak = profile.last_vibe_date === yesterdayStr
-      ? (profile.current_streak || 0) + 1
-      : 1;
-  }
-
-  await supabase
-    .from('profiles')
-    .update({ current_streak: newStreak, last_vibe_date: today })
-    .eq('id', user.id);
-
-  const { count } = await supabase
-    .from('vibe_selections')
-    .select('*', { count: 'exact', head: true })
-    .eq('vibe_id', vibeId)
-    .eq('selected_date', today);
-
-  const matchCount = count || 1;
-
-  return NextResponse.json({ matchCount, newStreak, isTwinMatch: matchCount > 1 });
 }

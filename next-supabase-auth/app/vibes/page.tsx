@@ -11,7 +11,7 @@ export default function VibesPage() {
   const [memes, setMemes] = useState<{ id: number; src: string; alt: string }[]>([]);
 
   useEffect(() => {
-    fetch('http://localhost:4000/vibe/memes')
+    fetch('/api/vibe/memes')
       .then(res => res.json())
       .then(data => setMemes(data));
   }, []);

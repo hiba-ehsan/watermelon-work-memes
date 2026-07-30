@@ -10,3 +10,4 @@ import { VibeModule } from './vibe/vibe.module';
   providers: [AppService],
 })
 export class AppModule {}
+

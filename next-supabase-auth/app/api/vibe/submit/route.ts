@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { fromServer } from '@/lib/supabase/server';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { apiClient } from '@/lib/api-client';
 
 export async function POST(request: Request) {
   const supabase = await fromServer();
@@ -33,21 +33,21 @@ export async function POST(request: Request) {
     .from('vibe-submissions')
     .getPublicUrl(fileName);
 
-  const admin = createAdminClient();
-  const { data: vibe, error: dbError } = await admin
-    .from('vibes')
-    .insert({
-      title,
-      image_url: publicUrl,
-      is_approved: false,
-      submitted_by: user.id,
-    })
-    .select('id')
-    .single();
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData.session?.access_token;
 
-  if (dbError) {
-    return NextResponse.json({ error: dbError.message }, { status: 500 });
+  try {
+    const result = await apiClient<{ vibeId: string; imageUrl: string }>({
+      path: '/vibe/submit',
+      method: 'POST',
+      body: { title, image_url: publicUrl },
+      accessToken,
+    });
+    return NextResponse.json(result);
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: err.message || 'Failed to submit vibe' },
+      { status: 500 },
+    );
   }
-
-  return NextResponse.json({ vibeId: vibe.id, imageUrl: publicUrl });
 }
