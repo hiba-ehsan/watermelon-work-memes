@@ -1,5 +1,5 @@
 {
-  "buildCommand": "nest build",
+  "buildCommand": "npm run build",
   "rewrites": [
     {
       "source": "/(.*)",
