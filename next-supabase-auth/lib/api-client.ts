@@ -7,15 +7,21 @@ interface ApiOptions {
   accessToken?: string;
 }
 
-export async function apiClient<T = unknown>(
-  options: ApiOptions,
-): Promise<T> {
+class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
+export async function apiClient<T = unknown>(options: ApiOptions): Promise<T> {
   const { path, method = 'GET', body, accessToken } = options;
 
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-
+  const headers: Record<string, string> = {};
+  if (body) {
+    headers['Content-Type'] = 'application/json';
+  }
   if (accessToken) {
     headers['Authorization'] = `Bearer ${accessToken}`;
   }
@@ -26,10 +32,14 @@ export async function apiClient<T = unknown>(
     body: body ? JSON.stringify(body) : undefined,
   });
 
+  const data = await res.json().catch(() => null);
+
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error(err.error || `Request failed with status ${res.status}`);
+    throw new ApiError(
+      data?.error || data?.message || res.statusText,
+      res.status,
+    );
   }
 
-  return res.json() as Promise<T>;
+  return data as T;
 }

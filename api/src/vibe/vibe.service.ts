@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 
 @Injectable()
@@ -30,7 +30,7 @@ export class VibeService {
       .single();
 
     if (error) {
-      throw new Error(error.message);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     return { vibeId: data.id, imageUrl: dto.image_url };
@@ -46,9 +46,9 @@ export class VibeService {
 
     if (insertError) {
       if (insertError.code === '23505') {
-        return { error: 'Already picked today', status: 409 };
+        throw new HttpException('Already picked today', HttpStatus.CONFLICT);
       }
-      throw new Error(insertError.message);
+      throw new HttpException(insertError.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     const { data: profile } = await admin

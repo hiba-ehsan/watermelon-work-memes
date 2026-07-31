@@ -32,12 +32,8 @@ export async function POST(request: Request) {
     });
     return NextResponse.json(result);
   } catch (err: any) {
-    if (err.message === 'Already picked today') {
-      return NextResponse.json({ error: 'Already picked today' }, { status: 409 });
-    }
-    return NextResponse.json(
-      { error: err.message || 'Failed to select vibe' },
-      { status: 500 },
-    );
+    const status = err.status || 500;
+    const message = err.message || 'Failed to select vibe';
+    return NextResponse.json({ error: message }, { status });
   }
 }

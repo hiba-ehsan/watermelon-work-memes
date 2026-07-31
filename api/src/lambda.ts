@@ -7,7 +7,7 @@ import express from 'express';
 const expressApp = express();
 let cachedApp: any;
 
-async function bootstrap() {
+export default async function handler(req: any, res: any) {
   if (!cachedApp) {
     const app = await NestFactory.create(
       AppModule,
@@ -20,10 +20,5 @@ async function bootstrap() {
     app.useGlobalPipes(new ValidationPipe());
     cachedApp = await app.init();
   }
-  return cachedApp;
-}
-
-export default async function handler(req: any, res: any) {
-  await bootstrap();
   expressApp(req, res);
 }

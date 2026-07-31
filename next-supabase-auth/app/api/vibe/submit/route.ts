@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   const ext = image.name.split('.').pop() || 'png';
   const fileName = `${user.id}/${Date.now()}.${ext}`;
 
-  const { data: uploadData, error: uploadError } = await supabase.storage
+  const { error: uploadError } = await supabase.storage
     .from('vibe-submissions')
     .upload(fileName, image, { contentType: image.type });
 
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
   } catch (err: any) {
     return NextResponse.json(
       { error: err.message || 'Failed to submit vibe' },
-      { status: 500 },
+      { status: err.status || 500 },
     );
   }
 }
