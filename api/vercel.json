@@ -1,16 +1,14 @@
 {
-  "version": 2,
   "buildCommand": "nest build",
-  "builds": [
+  "rewrites": [
     {
-      "src": "dist/lambda.js",
-      "use": "@vercel/node"
+      "source": "/(.*)",
+      "destination": "/api"
     }
   ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "dist/lambda.js"
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "dist/**"
     }
-  ]
+  }
 }
